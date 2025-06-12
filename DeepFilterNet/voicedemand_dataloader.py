@@ -22,7 +22,8 @@ class VoiceBankDataset(Dataset):
         self.noisy_dir = noisy_dir
         
     def __len__(self):
-        return len(self.clean_files)
+        """Return length of training dataset for LR scheduler setup"""
+        return self.len('train')
     
     def __getitem__(self, idx):
         # Load audio
