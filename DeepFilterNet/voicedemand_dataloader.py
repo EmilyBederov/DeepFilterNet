@@ -22,8 +22,7 @@ class VoiceBankDataset(Dataset):
         self.noisy_dir = noisy_dir
         
     def __len__(self):
-        """Return length of training dataset for LR scheduler setup"""
-        return self.len('train')
+        return len(self.clean_files)
     
     def __getitem__(self, idx):
         # Load audio
@@ -68,6 +67,10 @@ class VoiceBankDataLoader:
             'valid': batch_size_eval, 
             'test': batch_size_eval
         }
+
+    def __len__(self):
+        """Return length of training dataset for LR scheduler setup"""
+        return self.len('train')
     
     def iter_epoch(self, split: str, seed: int):
         dataset = self.datasets[split]
