@@ -134,7 +134,7 @@ def main():
         train_df_only=train_df_only,
     )
 
-    bs: int = config("BATCH_SIZE", 16, int, section="train")
+    bs: int = config("BATCH_SIZE", 1, int, section="train")
     bs_eval: int = config("BATCH_SIZE_EVAL", 0, int, section="train")
     bs_eval = bs_eval if bs_eval > 0 else bs
     overfit = config("OVERFIT", False, bool, section="train")
