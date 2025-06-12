@@ -117,21 +117,43 @@ class VoiceBankDataLoader:
             yield batch
     
     def _collate_fn(self, batch_list):
-        # Stack all tensors properly
-        speeches = torch.stack([b['clean'] for b in batch_list])      # [B, T, F, 2]
-        noisys = torch.stack([b['noisy'] for b in batch_list])        # [B, T, F, 2]
-        erb_feats = torch.stack([b['erb_feat'] for b in batch_list])  # [B, T, E]
-        spec_feats = torch.stack([b['spec_feat'] for b in batch_list]) # [B, T, F', 2]
+        # Find the maximum length
+        max_time = max(b['clean'].shape[0] for b in batch_list)
+        
+        # Pad all tensors to max length
+        speeches = []
+        noisys = []
+        erb_feats = []
+        spec_feats = []
+        
+        for b in batch_list:
+            # Pad time dimension to max_time
+            clean_padded = torch.nn.functional.pad(b['clean'], (0, 0, 0, 0, 0, max_time - b['clean'].shape[0]))
+            noisy_padded = torch.nn.functional.pad(b['noisy'], (0, 0, 0, 0, 0, max_time - b['noisy'].shape[0]))
+            erb_padded = torch.nn.functional.pad(b['erb_feat'], (0, 0, 0, max_time - b['erb_feat'].shape[0]))
+            spec_padded = torch.nn.functional.pad(b['spec_feat'], (0, 0, 0, 0, 0, max_time - b['spec_feat'].shape[0]))
+            
+            speeches.append(clean_padded)
+            noisys.append(noisy_padded)
+            erb_feats.append(erb_padded)
+            spec_feats.append(spec_padded)
+        
+        # Now stack them
+        speeches = torch.stack(speeches)      # [B, T, F, 2]
+        noisys = torch.stack(noisys)          # [B, T, F, 2]
+        erb_feats = torch.stack(erb_feats)    # [B, T, E]
+        spec_feats = torch.stack(spec_feats)  # [B, T, F', 2]
+        
         snrs = torch.stack([b['snr'] for b in batch_list])
         ids = torch.stack([torch.tensor(b['id']) for b in batch_list])
         
         # Add channel dimension: [B, T, F, 2] -> [B, 1, T, F, 2]
         speeches = speeches.unsqueeze(1)
         noisys = noisys.unsqueeze(1) 
-        erb_feats = erb_feats.unsqueeze(1)    # [B, 1, T, E]
-        spec_feats = spec_feats.unsqueeze(1)  # [B, 1, T, F', 2]
+        erb_feats = erb_feats.unsqueeze(1)
+        spec_feats = spec_feats.unsqueeze(1)
         
-        timings = torch.zeros(5)  # Dummy timings
+        timings = torch.zeros(5)
         
         return VoiceBankBatch(
             speech=speeches,
