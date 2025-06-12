@@ -35,6 +35,9 @@ from df.utils import (
 from libdf import DF
 from libdfdata import PytorchDataLoader as DataLoader
 
+from voicedemand_dataloader import VoiceBankDataLoader
+
+
 should_stop = False
 debug = False
 log_timings = False
@@ -136,36 +139,48 @@ def main():
     bs_eval = bs_eval if bs_eval > 0 else bs
     overfit = config("OVERFIT", False, bool, section="train")
     log_timings = config("LOG_TIMINGS", False, bool, section="train", save=False)
-    dataloader = DataLoader(
-        ds_dir=args.data_dir,
-        ds_config=args.data_config_file,
-        sr=p.sr,
-        batch_size=bs,
-        batch_size_eval=bs_eval,
-        num_workers=config("NUM_WORKERS", 4, int, section="train"),
-        pin_memory=get_device().type == "cuda",
-        max_len_s=config("MAX_SAMPLE_LEN_S", 5.0, float, section="train"),
-        fft_size=p.fft_size,
-        hop_size=p.hop_size,
-        nb_erb=p.nb_erb,
-        nb_spec=p.nb_df,
-        norm_alpha=get_norm_alpha(log=False),
-        p_reverb=config("p_reverb", 0.2, float, section="distortion"),
-        p_bw_ext=config("p_bandwidth_ext", 0.0, float, section="distortion"),
-        p_clipping=config("p_clipping", 0.0, float, section="distortion"),
-        p_zeroing=config("p_zeroing", 0.0, float, section="distortion"),
-        p_air_absorption=config("p_air_absorption", 0.0, float, section="distortion"),
-        p_interfer_sp=config("p_interfer_sp", 0.0, float, section="distortion"),
-        prefetch=config("NUM_PREFETCH_BATCHES", 32, int, section="train"),
-        overfit=overfit,
-        seed=seed,
-        min_nb_erb_freqs=p.min_nb_freqs,
-        log_timings=log_timings,
-        global_sampling_factor=config("GLOBAL_DS_SAMPLING_F", 1.0, float, section="train"),
-        snrs=config("DATALOADER_SNRS", [-5, 0, 5, 10, 20, 40], Csv(int), section="train"),  # type: ignore
-        gains=config("DATALOADER_GAINS", [-6, 0, 6], Csv(int), section="train"),  # type: ignore
-        log_level=log_level,
-    )
+    # dataloader = DataLoader(
+    #     ds_dir=args.data_dir,
+    #     ds_config=args.data_config_file,
+    #     sr=p.sr,
+    #     batch_size=bs,
+    #     batch_size_eval=bs_eval,
+    #     num_workers=config("NUM_WORKERS", 4, int, section="train"),
+    #     pin_memory=get_device().type == "cuda",
+    #     max_len_s=config("MAX_SAMPLE_LEN_S", 5.0, float, section="train"),
+    #     fft_size=p.fft_size,
+    #     hop_size=p.hop_size,
+    #     nb_erb=p.nb_erb,
+    #     nb_spec=p.nb_df,
+    #     norm_alpha=get_norm_alpha(log=False),
+    #     p_reverb=config("p_reverb", 0.2, float, section="distortion"),
+    #     p_bw_ext=config("p_bandwidth_ext", 0.0, float, section="distortion"),
+    #     p_clipping=config("p_clipping", 0.0, float, section="distortion"),
+    #     p_zeroing=config("p_zeroing", 0.0, float, section="distortion"),
+    #     p_air_absorption=config("p_air_absorption", 0.0, float, section="distortion"),
+    #     p_interfer_sp=config("p_interfer_sp", 0.0, float, section="distortion"),
+    #     prefetch=config("NUM_PREFETCH_BATCHES", 32, int, section="train"),
+    #     overfit=overfit,
+    #     seed=seed,
+    #     min_nb_erb_freqs=p.min_nb_freqs,
+    #     log_timings=log_timings,
+    #     global_sampling_factor=config("GLOBAL_DS_SAMPLING_F", 1.0, float, section="train"),
+    #     snrs=config("DATALOADER_SNRS", [-5, 0, 5, 10, 20, 40], Csv(int), section="train"),  # type: ignore
+    #     gains=config("DATALOADER_GAINS", [-6, 0, 6], Csv(int), section="train"),  # type: ignore
+    #     log_level=log_level,
+    # )
+    dataloader = VoiceBankDataLoader(
+    train_clean_dir="Unet/audio_data/voicebank_dns_format/training_set/clean",
+    train_noisy_dir="Unet/audio_data/voicebank_dns_format/training_set/noisy",
+    val_clean_dir="Unet/audio_data/voicebank_dns_format/validation_set/clean",
+    val_noisy_dir="Unet/audio_data/voicebank_dns_format/validation_set/noisy",
+    test_clean_dir="Unet/audio_data/voicebank_dns_format/testing_set/clean",
+    test_noisy_dir="Unet/audio_data/voicebank_dns_format/testing_set/noisy",
+    
+    batch_size=bs,
+    batch_size_eval=bs_eval,
+    num_workers=config("NUM_WORKERS", 4, int, section="train")
+)
 
     # Batch size scheduling limits the batch size for the first epochs. It will increase the batch
     # size during training as specified. Used format is a comma separated list containing
