@@ -36,8 +36,7 @@ from libdf import DF
 from libdfdata import PytorchDataLoader as DataLoader
 
 #from voicedemand_dataloader import VoiceBankDataLoader
-
-from dataloaderDNS import DeepFilterDataLoader
+# from dataloaderDNS import DeepFilterDataLoader
 
 should_stop = False
 debug = False
@@ -183,11 +182,11 @@ def main():
     # num_workers=config("NUM_WORKERS", 4, int, section="train"),
     # )
 
-    loader = dataloaderDNS(data_root="../data")
+    # dataloader = DeepFilterDataLoader(data_root="../data")
 
-    for batch in loader.iter_epoch("train", seed=42):
-        print(batch.speech.shape)  # B x 1 x T
-        break
+    # for batch in dataloader.iter_epoch("train", seed=42):
+    #     print(batch.speech.shape)  # B x 1 x T
+    #     break
 
     # Batch size scheduling limits the batch size for the first epochs. It will increase the batch
     # size during training as specified. Used format is a comma separated list containing
