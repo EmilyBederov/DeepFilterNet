@@ -183,12 +183,12 @@ def main():
     # num_workers=config("NUM_WORKERS", 4, int, section="train"),
     # )
 
-    loader = dataloaderDNS(data_root="data")
+    loader = dataloaderDNS(data_root="../data")
 
     for batch in loader.iter_epoch("train", seed=42):
         print(batch.speech.shape)  # B x 1 x T
         break
-    
+
     # Batch size scheduling limits the batch size for the first epochs. It will increase the batch
     # size during training as specified. Used format is a comma separated list containing
     # epoch/batch size tuples where each tuple is separated via '/':
