@@ -35,8 +35,9 @@ from df.utils import (
 from libdf import DF
 from libdfdata import PytorchDataLoader as DataLoader
 
-from voicedemand_dataloader import VoiceBankDataLoader
+#from voicedemand_dataloader import VoiceBankDataLoader
 
+from dataloaderDNS import DeepFilterDataLoader
 
 should_stop = False
 debug = False
@@ -169,18 +170,25 @@ def main():
     #     gains=config("DATALOADER_GAINS", [-6, 0, 6], Csv(int), section="train"),  # type: ignore
     #     log_level=log_level,
     # )
-    dataloader = VoiceBankDataLoader(
-    train_clean="/home/emilybederov/Unet/audio_data/voicebank_dns_format/training_set/clean",
-    train_noisy="/home/emilybederov/Unet/audio_data/voicebank_dns_format/training_set/noisy",
-    val_clean="/home/emilybederov/Unet/audio_data/voicebank_dns_format/validation_set/clean",
-    val_noisy="/home/emilybederov/Unet/audio_data/voicebank_dns_format/validation_set/noisy",
-    test_clean="/home/emilybederov/Unet/audio_data/voicebank_dns_format/testing_set/clean",
-    test_noisy="/home/emilybederov/Unet/audio_data/voicebank_dns_format/testing_set/noisy",
-    batch_size=bs,
-    batch_size_eval=bs_eval,
-    num_workers=config("NUM_WORKERS", 4, int, section="train"),
-    )
 
+    # dataloader = VoiceBankDataLoader(
+    # train_clean="/home/emilybederov/Unet/audio_data/voicebank_dns_format/training_set/clean",
+    # train_noisy="/home/emilybederov/Unet/audio_data/voicebank_dns_format/training_set/noisy",
+    # val_clean="/home/emilybederov/Unet/audio_data/voicebank_dns_format/validation_set/clean",
+    # val_noisy="/home/emilybederov/Unet/audio_data/voicebank_dns_format/validation_set/noisy",
+    # test_clean="/home/emilybederov/Unet/audio_data/voicebank_dns_format/testing_set/clean",
+    # test_noisy="/home/emilybederov/Unet/audio_data/voicebank_dns_format/testing_set/noisy",
+    # batch_size=bs,
+    # batch_size_eval=bs_eval,
+    # num_workers=config("NUM_WORKERS", 4, int, section="train"),
+    # )
+
+    loader = dataloaderDNS(data_root="data")
+
+    for batch in loader.iter_epoch("train", seed=42):
+        print(batch.speech.shape)  # B x 1 x T
+        break
+    
     # Batch size scheduling limits the batch size for the first epochs. It will increase the batch
     # size during training as specified. Used format is a comma separated list containing
     # epoch/batch size tuples where each tuple is separated via '/':
